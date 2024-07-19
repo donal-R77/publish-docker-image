@@ -22,9 +22,12 @@ env:
 
 jobs:
   integration:
-    uses: ./
+    uses: ./.github/workflows/python-ci-workflow.yml
+    permissions:
+      contents: read
+      checks: write
   build:
-    
+    needs: [integration]
     runs-on: ubuntu-latest
     permissions:
       contents: read
