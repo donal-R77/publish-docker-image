@@ -1,19 +1,6 @@
 name: "Deployment"
-on:
-  workflow_call:
-    inputs:
-      environment:
-        required: true
-        type: string
-  workflow_dispatch:
-    inputs:
-      environment:
-        required: true
-        type: choice
-        description: Enter the target environment for the deployment
-        options:
-        - Staging
-        - Production
+on: [push]
+ 
 
 env:
   REGISTRY: ghcr.io
