@@ -1,0 +1,55 @@
+name: "Deployment"
+on:
+  workflow_call:
+    inputs:
+      environment:
+        required: true
+        type: string
+  workflow_dispatch:
+    inputs:
+      environment:
+        required: true
+        type: choice
+        description: Enter the target environment for the deployment
+        options:
+        - Staging
+        - Production
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  build:
+    environment:
+      name: ${{ inputs.environment }}
+      
+    runs-on: ubuntu-latest
+    permissions:
+      packages: read
+    concurrency:
+      group: deploy-${{ inputs.environment }}
+      cancel-in-progress: false
+    steps:
+      - id: 'auth'
+        uses: 'google-github-actions/auth@v2'
+        with:
+         credentials_json: '${{ secrets.GOOGLE_CREDENTIALS }}'
+      - name: 'Set up Cloud SDK'
+        uses: 'google-github-actions/setup-gcloud@v2'
+
+      - name: login to docker hub
+        id: docker-hub
+        env:
+          username: ${{secrets.DOCKERHUB_USERNAME}}
+          password: ${{secrets.DOCKERHUB_PASSWORD}}
+        run: |
+          docker login -u $username -p $password 
+      - name: build the docker image
+        id: build-docker-image
+        run: |
+          ls -la 
+          docker build . -f Dockerfile -t dhruvin30/demo-image-test:latest
+      - name: push the docker image
+        id: push-docker-image
+        run: docker push ${{secrets.DOCKERHUB_USERNAME}}/demo-image-test:latest
